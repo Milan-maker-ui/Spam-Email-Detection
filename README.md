@@ -28,4 +28,3 @@ This project classifies emails/messages as **Spam** or **Not Spam (Ham)** using 
 - Pickle
 
 ---
-
