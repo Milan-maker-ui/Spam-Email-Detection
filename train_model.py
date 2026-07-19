@@ -1,50 +1,49 @@
-import pandas as pd
+import os
 import joblib
+import pandas as pd
 
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score
 
-# Load dataset
-data = pd.read_csv(
-    r"C:\Users\arote\OneDrive\Desktop\spam.csv",
-    encoding='latin-1'
-)
+os.makedirs("models", exist_ok=True)
 
-# Keep required columns
-data = data[['v1', 'v2']]
-data.columns = ['label', 'message']
+data = pd.read_csv("spam.csv", encoding="latin-1")
 
-# Convert labels
-data['label'] = data['label'].map({
-    'ham': 0,
-    'spam': 1
+data = data[["v1", "v2"]]
+data.columns = ["label", "message"]
+
+data["label"] = data["label"].map({
+    "ham": 0,
+    "spam": 1
 })
 
-# TF-IDF Vectorization
-vectorizer = TfidfVectorizer()
+X = data["message"]
+y = data["label"]
 
-x = vectorizer.fit_transform(data['message'])
+vectorizer = TfidfVectorizer(stop_words="english")
 
-y = data['label']
+X = vectorizer.fit_transform(X)
 
-# Train-test split
-x_train, x_test, y_train, y_test = train_test_split(
-    x,
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
     y,
     test_size=0.2,
     random_state=42
 )
 
-# Train model
 model = MultinomialNB()
 
-model.fit(x_train, y_train)
+model.fit(X_train, y_train)
 
-# Save model
-joblib.dump(model, 'models/spam_model.pkl')
+prediction = model.predict(X_test)
 
-# Save vectorizer
-joblib.dump(vectorizer, 'models/vectorizer.pkl')
+accuracy = accuracy_score(y_test, prediction)
 
-print("Model and vectorizer saved successfully!")
+print("Accuracy:", accuracy)
+
+joblib.dump(model, "models/spam_model.pkl")
+joblib.dump(vectorizer, "models/vectorizer.pkl")
+
+print("Model Saved Successfully")
